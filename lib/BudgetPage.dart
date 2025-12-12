@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:every_dollar_app/BudgetItem.dart';
 
 class BudgetPage extends StatefulWidget {
   const BudgetPage({super.key, required this.title});
@@ -19,69 +21,106 @@ class BudgetPage extends StatefulWidget {
 }
 
 class _BudgetPage extends State<BudgetPage> {
-  int _counter = 0;
+  List<BudgetItem> mBudgetItems = [];
 
-  void _incrementCounter() {
+  void _addBudgetItem(String name, double amount) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+    mBudgetItems.add(BudgetItem(title: name, amount: amount));
     });
+  }
+
+  void _showAddBudgetItemDialog() {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController amountController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Add Budget Item'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Item Name',
+                hintText: 'e.g., Groceries',
+              ),
+              autofocus: true,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: amountController,
+              decoration: const InputDecoration(
+                labelText: 'Amount',
+                hintText: 'e.g., 150.00',
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final String name = nameController.text.trim();
+              final String amountText = amountController.text.trim();
+
+              if (name.isNotEmpty && amountText.isNotEmpty) {
+                final double? amount = double.tryParse(amountText);
+                if (amount != null && amount > 0) {
+                  _addBudgetItem(name, amount);
+                  Navigator.of(context).pop();
+                } else {
+                  // Optional: Show error for invalid amount
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a valid amount')),
+                  );
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please fill in all fields')),
+                );
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      );
+    },
+  );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the BudgetPage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have PUSHEDDDD the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      body: mBudgetItems.isEmpty
+          ? const Center(child: Text('No items yet'))
+          : ListView.builder(
+              itemCount: mBudgetItems.length,
+              itemBuilder: (context, index) {
+                final item = mBudgetItems[index];
+                return ListTile(
+                  title: Text(item.title),
+                  trailing: Text('\$${item.amount.toStringAsFixed(2)}'),
+                );
+              },
             ),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: _showAddBudgetItemDialog,
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }

@@ -31,11 +31,15 @@ class _BottomNavHomeState extends State<BottomNavHome> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Budget'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Transactions'),
+          BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: 'Charts'),
         ],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.black,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
