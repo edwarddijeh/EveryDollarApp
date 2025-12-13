@@ -6,7 +6,8 @@ class BudgetItem {
   double mDisplayedTotal = 0;
   double mCurrentTotal = 0;
   double mRemainingAmount = 0;
-  BudgetItem({required this.name, required this.amount})
+  final String? id;  // Optional: Use Uuid or DateTime.now().toString() for uniqueness
+  BudgetItem({required this.name, required this.amount, this.id})
   {
     mDisplayedTotal = amount;
   }
